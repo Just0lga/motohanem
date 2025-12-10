@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
+const { protect } = require('../middlewares/auth');
 
 /**
  * @swagger
@@ -75,8 +76,11 @@ const userController = require('../controllers/userController');
  *       500:
  *         description: Some server error
  */
-router.get('/', userController.getAllUsers);
 router.post('/', userController.createUser);
+router.post('/login', userController.login);
+
+// Protected Routes
+router.get('/', protect, userController.getAllUsers);
 
 /**
  * @swagger
@@ -101,6 +105,6 @@ router.post('/', userController.createUser);
  *       404:
  *         description: The user was not found
  */
-router.get('/:id', userController.getUserById);
+router.get('/:id', protect, userController.getUserById);
 
 module.exports = router;
