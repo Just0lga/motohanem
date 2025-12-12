@@ -28,6 +28,7 @@ app.use('/brands', require('./routes/brands'));
 app.use('/models', require('./routes/models'));
 app.use('/comments', require('./routes/comments'));
 app.use('/favorites', require('./routes/favorites'));
+app.use('/translations', require('./routes/translations'));
 
 // Root route
 app.get('/', (req, res) => {
