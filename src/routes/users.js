@@ -48,6 +48,8 @@ const { protect } = require('../middlewares/auth');
  *   get:
  *     summary: Returns the list of all the users
  *     tags: [Users]
+ *     security:              
+ *     - bearerAuth: []
  *     responses:
  *       200:
  *         description: The list of the users
@@ -60,6 +62,8 @@ const { protect } = require('../middlewares/auth');
  *   post:
  *     summary: Create a new user
  *     tags: [Users]
+ *     security:              
+ *     - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:

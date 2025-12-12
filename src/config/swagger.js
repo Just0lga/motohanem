@@ -14,8 +14,26 @@ const options = {
         description: 'Development server',
       },
     ],
+    // YENİ EKLENEN KISIM: Güvenlik Şeması Tanımı
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },
+    },
+    // İsteğe bağlı: Tüm rotalarda kilit ikonunu varsayılan olarak açmak isterseniz:
+    /*
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
+    */
   },
-  apis: ['./src/routes/*.js'], // Path to the API docs
+  apis: ['./src/routes/*.js'],
 };
 
 const specs = swaggerJsdoc(options);
