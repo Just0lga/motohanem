@@ -19,13 +19,8 @@ exports.getBrandsByVehicleType = async (req, res) => {
 }
 
 exports.createBrand = async (req, res) => {
-  const { vehicle_type_id, name, logo_url } = req.body;
   try {
-    const newBrand = new Brand({ 
-        vehicle_type: vehicle_type_id, 
-        name, 
-        logo_url 
-    });
+    const newBrand = new Brand(req.body);
     await newBrand.save();
     res.status(201).json(newBrand);
   } catch (err) {

@@ -24,6 +24,12 @@ const brandController = require('../controllers/brandController');
  *         logo_url:
  *           type: string
  *           description: The brand logo url
+ *         country:
+ *           type: string
+ *           description: The country of origin
+ *         description:
+ *           type: string
+ *           description: A brief description of the brand
  */
 
 /**

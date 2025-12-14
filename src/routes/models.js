@@ -9,8 +9,8 @@ const modelController = require('../controllers/modelController');
  *     Model:
  *       type: object
  *       required:
- *         - brand_id
- *         - name
+ *         - brand
+ *         - model
  *       properties:
  *         id:
  *           type: string
@@ -18,23 +18,61 @@ const modelController = require('../controllers/modelController');
  *         brand:
  *           type: string
  *           description: The brand id
- *         name:
+ *         model:
  *           type: string
  *           description: The model name
- *         year_start:
- *           type: integer
- *         year_end:
- *           type: integer
- *         image_url:
+ *         type:
  *           type: string
- *         horsepower:
+ *         engine_timing:
+ *           type: string
+ *         cylinder_count:
+ *           type: string
+ *         transmission:
+ *           type: string
+ *         cooling_type:
+ *           type: string
+ *         origin:
+ *           type: string
+ *         displacement_cc:
  *           type: integer
- *         torque:
+ *         power_hp_rpm:
+ *           type: string
+ *         torque_nm_rpm:
+ *           type: string
+ *         top_speed_kmh:
  *           type: integer
- *         top_speed:
+ *         acceleration_0_100_kmh_s:
+ *           type: number
+ *         fuel_consumption_km_per_l:
+ *           type: string
+ *         fuel_type:
+ *           type: string
+ *         seat_height_mm:
  *           type: integer
- *         weight:
+ *         wheelbase_mm:
  *           type: integer
+ *         wet_weight_kg:
+ *           type: integer
+ *         fuel_tank_l:
+ *           type: integer
+ *         front_suspension:
+ *           type: string
+ *         rear_suspension:
+ *           type: string
+ *         brake_front:
+ *           type: string
+ *         brake_rear:
+ *           type: string
+ *         abs:
+ *           type: string
+ *         tire_front:
+ *           type: string
+ *         tire_rear:
+ *           type: string
+ *         instrument_panel:
+ *           type: string
+ *         headlight:
+ *           type: string
  */
 
 /**
@@ -48,17 +86,45 @@ const modelController = require('../controllers/modelController');
  * @swagger
  * /models:
  *   get:
- *     summary: Returns the list of all the models
+ *     summary: Returns the list of all the models with pagination
  *     tags: [Models]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: The page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: The number of items per page
  *     responses:
  *       200:
  *         description: The list of the models
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Model'
+ *               type: object
+ *               properties:
+ *                 docs:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Model'
+ *                 totalDocs:
+ *                   type: integer
+ *                 limit:
+ *                   type: integer
+ *                 totalPages:
+ *                   type: integer
+ *                 page:
+ *                   type: integer
+ *                 hasNextPage:
+ *                   type: boolean
+ *                 hasPrevPage:
+ *                   type: boolean
  *   post:
  *     summary: Create a new model
  *     tags: [Models]
@@ -104,6 +170,111 @@ router.get('/', modelController.getAllModels);
  *                 $ref: '#/components/schemas/Model'
  */
 router.get('/brand/:brandId', modelController.getModelsByBrand);
+
+/**
+ * @swagger
+ * /models/type/{typeValue}:
+ *   get:
+ *     summary: Get models by type with pagination
+ *     tags: [Models]
+ *     parameters:
+ *       - in: path
+ *         name: typeValue
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The type value to filter by
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: The page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: The number of items per page
+ *     responses:
+ *       200:
+ *         description: The filtered models list
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 docs:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Model'
+ *                 totalDocs:
+ *                   type: integer
+ *                 limit:
+ *                   type: integer
+ *                 totalPages:
+ *                   type: integer
+ *                 page:
+ *                   type: integer
+ *                 hasNextPage:
+ *                   type: boolean
+ *                 hasPrevPage:
+ *                   type: boolean
+ */
+router.get('/type/:typeValue', modelController.getModelsByType);
+
+/**
+ * @swagger
+ * /models/origin/{originValue}:
+ *   get:
+ *     summary: Get models by origin with pagination
+ *     tags: [Models]
+ *     parameters:
+ *       - in: path
+ *         name: originValue
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The origin value to filter by
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: The page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: The number of items per page
+ *     responses:
+ *       200:
+ *         description: The filtered models list
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 docs:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Model'
+ *                 totalDocs:
+ *                   type: integer
+ *                 limit:
+ *                   type: integer
+ *                 totalPages:
+ *                   type: integer
+ *                 page:
+ *                   type: integer
+ *                 hasNextPage:
+ *                   type: boolean
+ *                 hasPrevPage:
+ *                   type: boolean
+ */
+router.get('/origin/:originValue', modelController.getModelsByOrigin);
+
 router.post('/', modelController.createModel);
 
 module.exports = router;

@@ -13,6 +13,12 @@ const brandSchema = new mongoose.Schema({
   },
   logo_url: {
     type: String
+  },
+  country: {
+    type: String
+  },
+  description: {
+    type: String
   }
 });
 
