@@ -101,6 +101,30 @@ router.get('/', commentController.getAllComments);
  *                 $ref: '#/components/schemas/Comment'
  */
 router.get('/model/:modelId', commentController.getCommentsByModel);
+/**
+ * @swagger
+ * /comments:
+ *   post:
+ *     summary: Create a new comment
+ *     tags: [Comments]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Comment'
+ *     responses:
+ *       201:
+ *         description: The comment was successfully created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Comment'
+ *       500:
+ *         description: Some server error
+ */
 router.post('/', commentController.createComment);
 
 module.exports = router;

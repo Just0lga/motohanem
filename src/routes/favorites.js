@@ -93,6 +93,30 @@ router.get('/', favoriteController.getAllFavorites);
  *                 $ref: '#/components/schemas/Favorite'
  */
 router.get('/user/:userId', favoriteController.getFavoritesByUser);
+/**
+ * @swagger
+ * /favorites:
+ *   post:
+ *     summary: Create a new favorite
+ *     tags: [Favorites]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Favorite'
+ *     responses:
+ *       201:
+ *         description: The favorite was successfully created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Favorite'
+ *       500:
+ *         description: Some server error
+ */
 router.post('/', favoriteController.createFavorite);
 
 module.exports = router;

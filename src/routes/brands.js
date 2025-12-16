@@ -102,6 +102,30 @@ router.get('/', brandController.getAllBrands);
  *                 $ref: '#/components/schemas/Brand'
  */
 router.get('/type/:vehicleTypeId', brandController.getBrandsByVehicleType);
+/**
+ * @swagger
+ * /brands:
+ *   post:
+ *     summary: Create a new brand
+ *     tags: [Brands]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Brand'
+ *     responses:
+ *       201:
+ *         description: The brand was successfully created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Brand'
+ *       500:
+ *         description: Some server error
+ */
 router.post('/', protect, admin, brandController.createBrand);
 
 module.exports = router;

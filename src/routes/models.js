@@ -278,6 +278,30 @@ router.get('/type/:typeValue', modelController.getModelsByType);
  */
 router.get('/origin/:originValue', modelController.getModelsByOrigin);
 
+/**
+ * @swagger
+ * /models:
+ *   post:
+ *     summary: Create a new model
+ *     tags: [Models]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Model'
+ *     responses:
+ *       201:
+ *         description: The model was successfully created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Model'
+ *       500:
+ *         description: Some server error
+ */
 router.post('/', protect, admin, modelController.createModel);
 
 module.exports = router;

@@ -93,6 +93,49 @@ const strictLimiter = rateLimit({
  *         description: Some server error
  */
 router.post('/', userController.createUser);
+/**
+ * @swagger
+ * /users/login:
+ *   post:
+ *     summary: Login a user
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 description: The user email
+ *               password:
+ *                 type: string
+ *                 description: The user password
+ *     responses:
+ *       200:
+ *         description: The user was successfully logged in
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 _id:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                 token:
+ *                   type: string
+ *       401:
+ *         description: Invalid email or password
+ *       429:
+ *         description: Too many requests, please try again later
+ */
 router.post('/login', strictLimiter, userController.login);
 
 // Protected Routes
