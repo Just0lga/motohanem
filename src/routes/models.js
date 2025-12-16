@@ -144,6 +144,9 @@ const modelController = require('../controllers/modelController');
  *       500:
  *         description: Some server error
  */
+const { protect } = require('../middlewares/auth');
+const admin = require('../middlewares/admin');
+
 router.get('/', modelController.getAllModels);
 
 /**
@@ -275,6 +278,6 @@ router.get('/type/:typeValue', modelController.getModelsByType);
  */
 router.get('/origin/:originValue', modelController.getModelsByOrigin);
 
-router.post('/', modelController.createModel);
+router.post('/', protect, admin, modelController.createModel);
 
 module.exports = router;

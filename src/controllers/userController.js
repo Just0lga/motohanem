@@ -33,6 +33,7 @@ exports.getUserById = async (req, res) => {
 };
 
 exports.createUser = async (req, res) => {
+  // Role is explicitly excluded here to ensure new users always default to 'user'
   const { name, email, password, avatar_url } = req.body;
 
   // Simple Validation

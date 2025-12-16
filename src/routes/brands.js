@@ -73,6 +73,9 @@ const brandController = require('../controllers/brandController');
  *       500:
  *         description: Some server error
  */
+const { protect } = require('../middlewares/auth');
+const admin = require('../middlewares/admin');
+
 router.get('/', brandController.getAllBrands);
 
 /**
@@ -99,6 +102,6 @@ router.get('/', brandController.getAllBrands);
  *                 $ref: '#/components/schemas/Brand'
  */
 router.get('/type/:vehicleTypeId', brandController.getBrandsByVehicleType);
-router.post('/', brandController.createBrand);
+router.post('/', protect, admin, brandController.createBrand);
 
 module.exports = router;

@@ -37,6 +37,9 @@ const translationController = require('../controllers/translationController');
  *       500:
  *         description: Server Error
  */
+const { protect } = require('../middlewares/auth');
+const admin = require('../middlewares/admin');
+
 router.get('/', translationController.getTranslations);
 
 /**
@@ -76,6 +79,6 @@ router.get('/', translationController.getTranslations);
  *       500:
  *         description: Server Error
  */
-router.post('/', translationController.createTranslation);
+router.post('/', protect, admin, translationController.createTranslation);
 
 module.exports = router;

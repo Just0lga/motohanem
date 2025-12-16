@@ -60,7 +60,10 @@ const vehicleController = require('../controllers/vehicleController');
  *       500:
  *         description: Some server error
  */
+const { protect } = require('../middlewares/auth');
+const admin = require('../middlewares/admin');
+
 router.get('/', vehicleController.getAllVehicleTypes);
-router.post('/', vehicleController.createVehicleType);
+router.post('/', protect, admin, vehicleController.createVehicleType);
 
 module.exports = router;

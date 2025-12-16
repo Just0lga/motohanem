@@ -19,6 +19,11 @@ const userSchema = new mongoose.Schema({
   },
   avatar_url: {
     type: String
+  },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user'
   }
 }, {
   timestamps: { createdAt: 'created_at', updatedAt: false }
