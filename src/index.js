@@ -13,7 +13,22 @@ const port = process.env.PORT || 3000;
 // Connect to MongoDB
 connectDB();
 
+const rateLimit = require('express-rate-limit');
+
+// Rate limiting
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  message: {
+    status: 429,
+    message: 'Too many requests, please try again later'
+  }
+});
+
 // Middleware
+app.use(globalLimiter);
 app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));

@@ -2,6 +2,18 @@ const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
 const { protect } = require('../middlewares/auth');
+const rateLimit = require('express-rate-limit');
+
+const strictLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 10, // Limit each IP to 10 login requests per `window`
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    status: 429,
+    message: 'Too many requests, please try again later',
+  },
+});
 
 /**
  * @swagger
@@ -81,7 +93,7 @@ const { protect } = require('../middlewares/auth');
  *         description: Some server error
  */
 router.post('/', userController.createUser);
-router.post('/login', userController.login);
+router.post('/login', strictLimiter, userController.login);
 
 // Protected Routes
 router.get('/', protect, userController.getAllUsers);
