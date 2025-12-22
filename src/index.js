@@ -8,6 +8,7 @@ const swaggerSpecs = require('./config/swagger');
 const cors = require('cors');
 
 const app = express();
+app.set('trust proxy', 1);
 const port = process.env.PORT || 3000;
 
 // Connect to MongoDB
