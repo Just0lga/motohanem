@@ -4,17 +4,21 @@ const options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'Vehicle App API',
+      title: 'Motohanem API',
       version: '1.0.0',
-      description: 'API documentation for the Vehicle Community App',
+      description: 'API documentation for the Motohanem Project',
     },
     servers: [
+      {
+        // CANLI ORTAM AYARI: İsteklerin sunucuya gitmesini sağlar
+        url: 'https://motohanem.site',
+        description: 'Production server',
+      },
       {
         url: 'http://localhost:3000',
         description: 'Development server',
       },
     ],
-    // YENİ EKLENEN KISIM: Güvenlik Şeması Tanımı
     components: {
       securitySchemes: {
         bearerAuth: {
@@ -24,14 +28,6 @@ const options = {
         },
       },
     },
-    // İsteğe bağlı: Tüm rotalarda kilit ikonunu varsayılan olarak açmak isterseniz:
-    /*
-    security: [
-      {
-        bearerAuth: [],
-      },
-    ],
-    */
   },
   apis: ['./src/routes/*.js'],
 };
