@@ -45,6 +45,7 @@ app.use('/models', require('./routes/models'));
 app.use('/comments', require('./routes/comments'));
 app.use('/favorites', require('./routes/favorites'));
 app.use('/translations', require('./routes/translations'));
+app.use('/api/v1/update', require('./routes/updateRoutes'));
 
 // Root route
 app.get('/', (req, res) => {
