@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const favoriteController = require('../controllers/favoriteController');
+const { protect } = require('../middlewares/auth');
 
 /**
  * @swagger
@@ -117,6 +118,6 @@ router.get('/user/:userId', favoriteController.getFavoritesByUser);
  *       500:
  *         description: Some server error
  */
-router.post('/', favoriteController.createFavorite);
+router.post('/', protect, favoriteController.createFavorite);
 
 module.exports = router;

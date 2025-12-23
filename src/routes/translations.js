@@ -48,6 +48,8 @@ router.get('/', translationController.getTranslations);
  *   post:
  *     summary: Create a new translation
  *     tags: [Translations]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:

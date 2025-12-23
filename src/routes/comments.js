@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const commentController = require('../controllers/commentController');
+const { protect } = require('../middlewares/auth');
 
 /**
  * @swagger
@@ -125,6 +126,6 @@ router.get('/model/:modelId', commentController.getCommentsByModel);
  *       500:
  *         description: Some server error
  */
-router.post('/', commentController.createComment);
+router.post('/', protect, commentController.createComment);
 
 module.exports = router;

@@ -6,7 +6,7 @@ const rateLimit = require('express-rate-limit');
 
 const strictLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 10, // Limit each IP to 10 login requests per `window`
+  max: 999, // Limit each IP to 999 login requests per `window`
   standardHeaders: true,
   legacyHeaders: false,
   message: {

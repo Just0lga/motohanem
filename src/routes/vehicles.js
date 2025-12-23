@@ -44,6 +44,8 @@ const vehicleController = require('../controllers/vehicleController');
  *   post:
  *     summary: Create a new vehicle type
  *     tags: [VehicleTypes]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:

@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
 const protect = async (req, res, next) => {
   let token;
@@ -11,17 +12,22 @@ const protect = async (req, res, next) => {
       token = req.headers.authorization.split(' ')[1];
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       
-      // Fetch user from DB to get latest role and other details
-      // Note: We need to require User model at the top
-      // req.user = await require('../models/User').findById(decoded.id).select('-password');
-      // Ideally, require User at top of file, but to keep edit minimal/safe here:
-      const User = require('../models/User');
       req.user = await User.findById(decoded.id).select('-password');
       
+      if (!req.user) {
+         return res.status(401).json({ message: 'User no longer exists' });
+      }
+
       next();
     } catch (error) {
       console.error(error);
-      res.status(401).json({ message: 'Not authorized, token failed' });
+      if (error.name === 'TokenExpiredError') {
+        return res.status(401).json({ message: 'Token expired' });
+      }
+      if (error.name === 'JsonWebTokenError') {
+        return res.status(401).json({ message: 'Invalid token' });
+      }
+      return res.status(401).json({ message: 'Not authorized, token failed' });
     }
   }
 
