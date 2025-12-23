@@ -41,7 +41,8 @@ const modelSchema = new mongoose.Schema({
   tire_rear: String,
 
   instrument_panel: String,
-  headlight: String
+  headlight: String,
+  model_image_url: String
 }, {
   timestamps: { createdAt: 'created_at', updatedAt: false }
 });

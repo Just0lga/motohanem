@@ -73,6 +73,8 @@ const modelController = require('../controllers/modelController');
  *           type: string
  *         headlight:
  *           type: string
+ *         model_image_url:
+ *           type: string
  */
 
 /**
