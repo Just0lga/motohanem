@@ -19,11 +19,16 @@ exports.getFavoritesByUser = async (req, res) => {
 }
 
 exports.createFavorite = async (req, res) => {
-  const { user_id, model_id } = req.body;
+  const { user_id, model_id, user, model } = req.body;
+
+  // Support both snake_case and direct names
+  const finalUserId = user_id || user;
+  const finalModelId = model_id || model;
+
   try {
     const newFavorite = new Favorite({ 
-        user: user_id, 
-        model: model_id 
+        user: finalUserId, 
+        model: finalModelId 
     });
     await newFavorite.save();
     res.status(201).json(newFavorite);

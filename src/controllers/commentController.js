@@ -19,11 +19,16 @@ exports.getCommentsByModel = async (req, res) => {
 }
 
 exports.createComment = async (req, res) => {
-  const { model_id, user_id, rating, comment } = req.body;
+  const { model_id, user_id, rating, comment, user, model } = req.body;
+  
+  // Support both snake_case and direct names
+  const finalUserId = user_id || user;
+  const finalModelId = model_id || model;
+
   try {
     const newComment = new Comment({ 
-        model: model_id, 
-        user: user_id, 
+        model: finalModelId, 
+        user: finalUserId, 
         rating, 
         comment 
     });
