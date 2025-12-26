@@ -128,4 +128,64 @@ router.get('/model/:modelId', commentController.getCommentsByModel);
  */
 router.post('/', protect, commentController.createComment);
 
+/**
+ * @swagger
+ * /comments/{id}:
+ *   put:
+ *     summary: Update a comment
+ *     tags: [Comments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The comment id
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               rating:
+ *                 type: integer
+ *               comment:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: The comment was successfully updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Comment'
+ *       404:
+ *         description: Comment not found
+ *       500:
+ *         description: Some server error
+ *   delete:
+ *     summary: Delete a comment
+ *     tags: [Comments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The comment id
+ *     responses:
+ *       200:
+ *         description: The comment was successfully deleted
+ *       404:
+ *         description: Comment not found
+ *       500:
+ *         description: Some server error
+ */
+router.put('/:id', protect, commentController.updateComment);
+router.delete('/:id', protect, commentController.deleteComment);
+
 module.exports = router;

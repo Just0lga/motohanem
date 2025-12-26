@@ -37,8 +37,48 @@ exports.createComment = async (req, res) => {
   } catch (err) {
     // Check for duplicate key error (MongoDB code 11000)
     if (err.code === 11000) {
-        return res.status(400).json({ message: 'User has already commented on this model' });
+        // Find the existing comment to return it
+        const existingComment = await Comment.findOne({ 
+            model: finalModelId, 
+            user: finalUserId 
+        });
+        
+        return res.status(400).json({ 
+            message: 'User has already commented on this model',
+            comment: existingComment
+        });
     }
     res.status(500).json({ message: err.message });
   }
+};
+
+exports.updateComment = async (req, res) => {
+    try {
+        const { rating, comment } = req.body;
+        const updatedComment = await Comment.findOneAndUpdate(
+            { _id: req.params.id, user: req.user._id },
+            { rating, comment },
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedComment) {
+            return res.status(404).json({ message: 'Comment not found or user not authorized' });
+        }
+
+        res.json(updatedComment);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.deleteComment = async (req, res) => {
+    try {
+        const comment = await Comment.findOneAndDelete({ _id: req.params.id, user: req.user._id });
+        if (!comment) {
+            return res.status(404).json({ message: 'Comment not found or user not authorized' });
+        }
+        res.json({ message: 'Comment deleted' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
 };

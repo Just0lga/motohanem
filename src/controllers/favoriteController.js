@@ -39,3 +39,15 @@ exports.createFavorite = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+exports.deleteFavorite = async (req, res) => {
+    try {
+        const favorite = await Favorite.findOneAndDelete({ _id: req.params.id, user: req.user._id });
+        if (!favorite) {
+            return res.status(404).json({ message: 'Favorite not found or user not authorized' });
+        }
+        res.json({ message: 'Favorite deleted' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};

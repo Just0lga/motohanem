@@ -120,4 +120,29 @@ router.get('/user/:userId', favoriteController.getFavoritesByUser);
  */
 router.post('/', protect, favoriteController.createFavorite);
 
+/**
+ * @swagger
+ * /favorites/{id}:
+ *   delete:
+ *     summary: Delete a favorite
+ *     tags: [Favorites]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The favorite id
+ *     responses:
+ *       200:
+ *         description: The favorite was successfully deleted
+ *       404:
+ *         description: Favorite not found
+ *       500:
+ *         description: Some server error
+ */
+router.delete('/:id', protect, favoriteController.deleteFavorite);
+
 module.exports = router;
