@@ -6,6 +6,9 @@ const modelSchema = new mongoose.Schema({
     ref: 'Brand',
     required: true
   },
+  brand_name: {
+    type: String
+  },
   model: {
     type: String,
     required: true,

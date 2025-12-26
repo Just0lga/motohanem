@@ -18,6 +18,9 @@ const modelController = require('../controllers/modelController');
  *         brand:
  *           type: string
  *           description: The brand id
+ *         brand_name:
+ *           type: string
+ *           description: The brand name
  *         model:
  *           type: string
  *           description: The model name
