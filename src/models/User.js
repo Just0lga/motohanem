@@ -24,15 +24,18 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['user', 'admin'],
     default: 'user'
-  }
+  },
+  resetPasswordToken: String,
+  resetPasswordExpires: Date
 }, {
   timestamps: { createdAt: 'created_at', updatedAt: false }
 });
 
 // Encrypt password using bcrypt
-userSchema.pre('save', async function(next) {
+// Encrypt password using bcrypt
+userSchema.pre('save', async function() {
   if (!this.isModified('password')) {
-    next();
+    return;
   }
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);

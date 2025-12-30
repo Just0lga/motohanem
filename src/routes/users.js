@@ -142,7 +142,7 @@ router.post('/login', strictLimiter, userController.login);
  * @swagger
  * /users/forgot-password:
  *   post:
- *     summary: Reset user password
+ *     summary: Send password reset email
  *     tags: [Users]
  *     requestBody:
  *       required: true
@@ -151,16 +151,44 @@ router.post('/login', strictLimiter, userController.login);
  *           schema:
  *             type: object
  *             required:
- *               - name
  *               - email
- *               - newPassword
  *             properties:
- *               name:
- *                 type: string
- *                 description: The user name
  *               email:
  *                 type: string
  *                 description: The user email
+ *     responses:
+ *       200:
+ *         description: Email sent
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Some server error
+ */
+router.post('/forgot-password', userController.forgotPassword);
+
+/**
+ * @swagger
+ * /users/reset-password:
+ *   post:
+ *     summary: Reset user password with code
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - code
+ *               - newPassword
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 description: The user email
+ *               code:
+ *                 type: string
+ *                 description: The 6-digit code
  *               newPassword:
  *                 type: string
  *                 description: The new password
@@ -168,13 +196,11 @@ router.post('/login', strictLimiter, userController.login);
  *       200:
  *         description: Password updated successfully
  *       400:
- *         description: Please provide name, email and new password
- *       404:
- *         description: User not found
+ *         description: Invalid or expired token
  *       500:
  *         description: Some server error
  */
-router.post('/forgot-password', userController.forgotPassword);
+router.post('/reset-password', userController.resetPassword);
 
 // Protected Routes
 router.get('/', protect, userController.getAllUsers);
