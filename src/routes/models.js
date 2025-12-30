@@ -152,6 +152,159 @@ const modelController = require('../controllers/modelController');
 const { protect } = require('../middlewares/auth');
 const admin = require('../middlewares/admin');
 
+/**
+ * @swagger
+ * /models/stats/most-favorited:
+ *   get:
+ *     summary: Get most favorited models
+ *     tags: [Models]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: The page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: The number of items per page
+ *     responses:
+ *       200:
+ *         description: List of most favorited models
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 docs:
+ *                   type: array
+ *                   items:
+ *                     allOf:
+ *                       - $ref: '#/components/schemas/Model'
+ *                       - type: object
+ *                         properties:
+ *                           favoriteCount:
+ *                             type: integer
+ *                 totalDocs:
+ *                   type: integer
+ *                 limit:
+ *                   type: integer
+ *                 totalPages:
+ *                   type: integer
+ *                 page:
+ *                   type: integer
+ *                 hasNextPage:
+ *                   type: boolean
+ *                 hasPrevPage:
+ *                   type: boolean
+ */
+router.get('/stats/most-favorited', modelController.getMostFavorited);
+
+/**
+ * @swagger
+ * /models/stats/most-commented:
+ *   get:
+ *     summary: Get most commented models
+ *     tags: [Models]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: The page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: The number of items per page
+ *     responses:
+ *       200:
+ *         description: List of most commented models
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 docs:
+ *                   type: array
+ *                   items:
+ *                     allOf:
+ *                       - $ref: '#/components/schemas/Model'
+ *                       - type: object
+ *                         properties:
+ *                           commentCount:
+ *                             type: integer
+ *                 totalDocs:
+ *                   type: integer
+ *                 limit:
+ *                   type: integer
+ *                 totalPages:
+ *                   type: integer
+ *                 page:
+ *                   type: integer
+ *                 hasNextPage:
+ *                   type: boolean
+ *                 hasPrevPage:
+ *                   type: boolean
+ */
+router.get('/stats/most-commented', modelController.getMostCommented);
+
+/**
+ * @swagger
+ * /models/stats/highest-rated:
+ *   get:
+ *     summary: Get highest rated models
+ *     tags: [Models]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: The page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: The number of items per page
+ *     responses:
+ *       200:
+ *         description: List of highest rated models
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 docs:
+ *                   type: array
+ *                   items:
+ *                     allOf:
+ *                       - $ref: '#/components/schemas/Model'
+ *                       - type: object
+ *                         properties:
+ *                           averageRating:
+ *                             type: number
+ *                 totalDocs:
+ *                   type: integer
+ *                 limit:
+ *                   type: integer
+ *                 totalPages:
+ *                   type: integer
+ *                 page:
+ *                   type: integer
+ *                 hasNextPage:
+ *                   type: boolean
+ *                 hasPrevPage:
+ *                   type: boolean
+ */
+router.get('/stats/highest-rated', modelController.getHighestRated);
+
 router.get('/', modelController.getAllModels);
 
 /**

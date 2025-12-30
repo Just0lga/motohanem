@@ -1,4 +1,248 @@
 const Model = require('../models/Model');
+const Favorite = require('../models/Favorite');
+const Comment = require('../models/Comment');
+
+exports.getMostFavorited = async (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    try {
+        const pipeline = [
+            // Lookup favorites (Left Join)
+            {
+                $lookup: {
+                    from: 'favorites',
+                    localField: '_id',
+                    foreignField: 'model',
+                    as: 'favorites_data'
+                }
+            },
+            // Calculate count
+            {
+                $addFields: {
+                    favoriteCount: { $size: '$favorites_data' }
+                }
+            },
+            // Remove the heavy favorites_data array
+            {
+                $project: {
+                    favorites_data: 0
+                }
+            },
+            // Sort by count descending
+            { $sort: { favoriteCount: -1 } },
+            // Pagination
+            {
+                $facet: {
+                    metadata: [{ $count: 'totalDocs' }],
+                    data: [{ $skip: skip }, { $limit: limit }]
+                }
+            },
+            { $unwind: '$metadata' },
+            {
+                $project: {
+                    totalDocs: '$metadata.totalDocs',
+                    data: 1
+                }
+            }
+        ];
+
+        const aggregationResult = await Model.aggregate(pipeline);
+
+        if (!aggregationResult.length) {
+             return res.json({
+                docs: [],
+                totalDocs: 0,
+                limit,
+                totalPages: 0,
+                page,
+                hasNextPage: false,
+                hasPrevPage: false
+            });
+        }
+
+        const { totalDocs, data } = aggregationResult[0];
+
+        // Populate brand details
+        const docs = await Model.populate(data, { path: 'brand' });
+
+        res.json({
+            docs,
+            totalDocs,
+            limit,
+            totalPages: Math.ceil(totalDocs / limit),
+            page,
+            hasNextPage: page * limit < totalDocs,
+            hasPrevPage: page > 1
+        });
+
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.getMostCommented = async (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    try {
+        const pipeline = [
+            // Lookup comments (Left Join)
+            {
+                $lookup: {
+                    from: 'comments',
+                    localField: '_id',
+                    foreignField: 'model',
+                    as: 'comments_data'
+                }
+            },
+            // Calculate count
+            {
+                $addFields: {
+                    commentCount: { $size: '$comments_data' }
+                }
+            },
+            // Remove heavy comments_data array
+            {
+                $project: {
+                    comments_data: 0
+                }
+            },
+            // Sort by count descending
+            { $sort: { commentCount: -1 } },
+            // Pagination
+            {
+                $facet: {
+                    metadata: [{ $count: 'totalDocs' }],
+                    data: [{ $skip: skip }, { $limit: limit }]
+                }
+            },
+            { $unwind: '$metadata' },
+            {
+                $project: {
+                    totalDocs: '$metadata.totalDocs',
+                    data: 1
+                }
+            }
+        ];
+
+        const aggregationResult = await Model.aggregate(pipeline);
+
+        if (!aggregationResult.length) {
+            return res.json({
+                docs: [],
+                totalDocs: 0,
+                limit,
+                totalPages: 0,
+                page,
+                hasNextPage: false,
+                hasPrevPage: false
+            });
+        }
+
+        const { totalDocs, data } = aggregationResult[0];
+
+        // Populate brand details
+        const docs = await Model.populate(data, { path: 'brand' });
+
+        res.json({
+            docs,
+            totalDocs,
+            limit,
+            totalPages: Math.ceil(totalDocs / limit),
+            page,
+            hasNextPage: page * limit < totalDocs,
+            hasPrevPage: page > 1
+        });
+
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.getHighestRated = async (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    try {
+        const pipeline = [
+            // Lookup comments (Left Join)
+            {
+                $lookup: {
+                    from: 'comments',
+                    localField: '_id',
+                    foreignField: 'model',
+                    as: 'comments_data'
+                }
+            },
+            // Calculate average rating, handling nulls
+            {
+                $addFields: {
+                    averageRating: { 
+                        $ifNull: [ { $avg: '$comments_data.rating' }, 0 ]
+                    }
+                }
+            },
+            // Remove heavy comments_data
+            {
+                $project: {
+                    comments_data: 0
+                }
+            },
+            // Sort by rating descending
+            { $sort: { averageRating: -1 } },
+            // Pagination
+            {
+                $facet: {
+                    metadata: [{ $count: 'totalDocs' }],
+                    data: [{ $skip: skip }, { $limit: limit }]
+                }
+            },
+            { $unwind: '$metadata' },
+            {
+                $project: {
+                    totalDocs: '$metadata.totalDocs',
+                    data: 1
+                }
+            }
+        ];
+
+        const aggregationResult = await Model.aggregate(pipeline);
+
+        if (!aggregationResult.length) {
+            return res.json({
+                docs: [],
+                totalDocs: 0,
+                limit,
+                totalPages: 0,
+                page,
+                hasNextPage: false,
+                hasPrevPage: false
+            });
+        }
+
+        const { totalDocs, data } = aggregationResult[0];
+
+        // Populate brand details
+        const docs = await Model.populate(data, { path: 'brand' });
+
+        res.json({
+            docs,
+            totalDocs,
+            limit,
+            totalPages: Math.ceil(totalDocs / limit),
+            page,
+            hasNextPage: page * limit < totalDocs,
+            hasPrevPage: page > 1
+        });
+
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
 
 exports.getAllModels = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
