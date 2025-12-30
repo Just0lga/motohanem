@@ -200,7 +200,55 @@ router.post('/forgot-password', userController.forgotPassword);
  *       500:
  *         description: Some server error
  */
-router.post('/reset-password', userController.resetPassword);
+// Protected Routes
+/**
+ * @swagger
+ * /users/request-account-deletion:
+ *   post:
+ *     summary: Request to delete account (sends email)
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Verification email sent
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Some server error
+ */
+router.post('/request-account-deletion', protect, userController.requestAccountDeletion);
+
+/**
+ * @swagger
+ * /users/confirm-account-deletion:
+ *   post:
+ *     summary: Confirm account deletion with code
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - code
+ *             properties:
+ *               code:
+ *                 type: string
+ *                 description: The 6-digit confirmation code
+ *     responses:
+ *       200:
+ *         description: Account deleted successfully
+ *       400:
+ *         description: Invalid or expired token
+ *       500:
+ *         description: Some server error
+ */
+router.post('/confirm-account-deletion', protect, userController.confirmAccountDeletion);
+
 
 // Protected Routes
 router.get('/', protect, userController.getAllUsers);

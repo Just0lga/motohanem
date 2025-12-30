@@ -171,3 +171,62 @@ exports.resetPassword = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+exports.requestAccountDeletion = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Generate random 6-digit code
+    const code = Math.floor(100000 + Math.random() * 900000);
+
+    // Set token and expiration (10 minutes)
+    user.deleteAccountToken = code;
+    user.deleteAccountExpires = Date.now() + 10 * 60 * 1000;
+
+    await user.save();
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: user.email,
+      subject: 'Account Deletion Request',
+      text: `You requested to delete your account. Your confirmation code is: ${code}. This code will expire in 10 minutes.`,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log(error);
+        return res.status(500).json({ message: 'Error sending email' });
+      } else {
+        res.json({ message: 'Verification email sent' });
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.confirmAccountDeletion = async (req, res) => {
+  const { code } = req.body;
+
+  try {
+    const user = await User.findOne({
+      _id: req.user.id,
+      deleteAccountToken: code,
+      deleteAccountExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid or expired token' });
+    }
+
+    await User.findByIdAndDelete(req.user.id);
+
+    res.json({ message: 'Account deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
