@@ -138,6 +138,44 @@ router.post('/', userController.createUser);
  */
 router.post('/login', strictLimiter, userController.login);
 
+/**
+ * @swagger
+ * /users/forgot-password:
+ *   post:
+ *     summary: Reset user password
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - newPassword
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: The user name
+ *               email:
+ *                 type: string
+ *                 description: The user email
+ *               newPassword:
+ *                 type: string
+ *                 description: The new password
+ *     responses:
+ *       200:
+ *         description: Password updated successfully
+ *       400:
+ *         description: Please provide name, email and new password
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Some server error
+ */
+router.post('/forgot-password', userController.forgotPassword);
+
 // Protected Routes
 router.get('/', protect, userController.getAllUsers);
 

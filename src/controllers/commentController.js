@@ -11,8 +11,23 @@ exports.getAllComments = async (req, res) => {
 
 exports.getCommentsByModel = async (req, res) => {
     try {
-        const comments = await Comment.find({ model: req.params.modelId }).populate('user');
-        res.json(comments);
+        const { modelId } = req.params;
+        const mongoose = require('mongoose');
+
+        const [comments, ratingResult] = await Promise.all([
+          Comment.find({ model: modelId }).populate('user'),
+          Comment.aggregate([
+            { $match: { model: new mongoose.Types.ObjectId(modelId) } },
+            { $group: { _id: null, averageRating: { $avg: '$rating' } } }
+          ])
+        ]);
+
+        const averageRating = ratingResult.length > 0 ? ratingResult[0].averageRating : 0;
+
+        res.json({
+          averageRating,
+          comments
+        });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

@@ -6,11 +6,78 @@ exports.getAllModels = async (req, res) => {
   const skip = (page - 1) * limit;
 
   try {
-    const totalDocs = await Model.countDocuments();
-    const models = await Model.find().populate('brand').skip(skip).limit(limit);
+    const pipeline = [
+      // Lookup comments to get count and rating
+      {
+        $lookup: {
+          from: 'comments',
+          localField: '_id',
+          foreignField: 'model',
+          as: 'comments_data'
+        }
+      },
+      // Lookup favorites to get count
+      {
+        $lookup: {
+          from: 'favorites',
+          localField: '_id',
+          foreignField: 'model',
+          as: 'favorites_data'
+        }
+      },
+      // Lookup brand to populate it (mimicking .populate('brand'))
+      {
+        $lookup: {
+          from: 'brands',
+          localField: 'brand',
+          foreignField: '_id',
+          as: 'brand'
+        }
+      },
+      // Unwind brand array (since lookup returns an array)
+      {
+        $unwind: {
+          path: '$brand',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      // Add calculated fields
+      {
+        $addFields: {
+          commentCount: { $size: '$comments_data' },
+          favoriteCount: { $size: '$favorites_data' },
+          averageRating: { 
+            $ifNull: [
+              { $avg: '$comments_data.rating' }, 
+              0 
+            ] 
+          }
+        }
+      },
+      // Project to remove heavy arrays and keep necessary fields
+      {
+        $project: {
+          comments_data: 0,
+          favorites_data: 0
+        }
+      },
+      // Facet for pagination
+      {
+        $facet: {
+          metadata: [{ $count: 'totalDocs' }],
+          data: [{ $skip: skip }, { $limit: limit }]
+        }
+      }
+    ];
+
+    const result = await Model.aggregate(pipeline);
     
+    const metadata = result[0].metadata[0] || { totalDocs: 0 };
+    const docs = result[0].data;
+    const totalDocs = metadata.totalDocs;
+
     res.json({
-        docs: models,
+        docs,
         totalDocs,
         limit,
         totalPages: Math.ceil(totalDocs / limit),

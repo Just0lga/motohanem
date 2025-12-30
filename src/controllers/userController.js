@@ -97,3 +97,26 @@ exports.login = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+exports.forgotPassword = async (req, res) => {
+  const { name, email, newPassword } = req.body;
+
+  if (!name || !email || !newPassword) {
+    return res.status(400).json({ message: 'Please provide name, email and new password' });
+  }
+
+  try {
+    const user = await User.findOne({ name, email });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
