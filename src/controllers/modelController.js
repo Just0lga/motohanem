@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Model = require('../models/Model');
 const Favorite = require('../models/Favorite');
 const Comment = require('../models/Comment');
@@ -18,16 +19,29 @@ exports.getMostFavorited = async (req, res) => {
                     as: 'favorites_data'
                 }
             },
+            {
+                $lookup: {
+                    from: 'comments',
+                    localField: '_id',
+                    foreignField: 'model',
+                    as: 'comments_data'
+                }
+            },
             // Calculate count
             {
                 $addFields: {
-                    favoriteCount: { $size: '$favorites_data' }
+                    favoriteCount: { $size: '$favorites_data' },
+                    commentCount: { $size: '$comments_data' },
+                    averageRating: { 
+                        $ifNull: [ { $avg: '$comments_data.rating' }, 0 ]
+                    }
                 }
             },
-            // Remove the heavy favorites_data array
+            // Remove the heavy arrays
             {
                 $project: {
-                    favorites_data: 0
+                    favorites_data: 0,
+                    comments_data: 0
                 }
             },
             // Sort by count descending
@@ -98,16 +112,29 @@ exports.getMostCommented = async (req, res) => {
                     as: 'comments_data'
                 }
             },
+            {
+                $lookup: {
+                    from: 'favorites',
+                    localField: '_id',
+                    foreignField: 'model',
+                    as: 'favorites_data'
+                }
+            },
             // Calculate count
             {
                 $addFields: {
-                    commentCount: { $size: '$comments_data' }
+                    commentCount: { $size: '$comments_data' },
+                    favoriteCount: { $size: '$favorites_data' },
+                    averageRating: { 
+                        $ifNull: [ { $avg: '$comments_data.rating' }, 0 ]
+                    }
                 }
             },
-            // Remove heavy comments_data array
+            // Remove heavy arrays
             {
                 $project: {
-                    comments_data: 0
+                    comments_data: 0,
+                    favorites_data: 0
                 }
             },
             // Sort by count descending
@@ -178,18 +205,29 @@ exports.getHighestRated = async (req, res) => {
                     as: 'comments_data'
                 }
             },
+            {
+                $lookup: {
+                    from: 'favorites',
+                    localField: '_id',
+                    foreignField: 'model',
+                    as: 'favorites_data'
+                }
+            },
             // Calculate average rating, handling nulls
             {
                 $addFields: {
                     averageRating: { 
                         $ifNull: [ { $avg: '$comments_data.rating' }, 0 ]
-                    }
+                    },
+                    commentCount: { $size: '$comments_data' },
+                    favoriteCount: { $size: '$favorites_data' }
                 }
             },
-            // Remove heavy comments_data
+            // Remove heavy arrays
             {
                 $project: {
-                    comments_data: 0
+                    comments_data: 0,
+                    favorites_data: 0
                 }
             },
             // Sort by rating descending
@@ -336,7 +374,53 @@ exports.getAllModels = async (req, res) => {
 
 exports.getModelsByBrand = async (req, res) => {
     try {
-        const models = await Model.find({ brand: req.params.brandId });
+        const pipeline = [
+            {
+                $match: {
+                   brand: new mongoose.Types.ObjectId(req.params.brandId)
+                }
+            },
+            // Lookup comments
+            {
+                $lookup: {
+                    from: 'comments',
+                    localField: '_id',
+                    foreignField: 'model',
+                    as: 'comments_data'
+                }
+            },
+            // Lookup favorites
+            {
+                $lookup: {
+                    from: 'favorites',
+                    localField: '_id',
+                    foreignField: 'model',
+                    as: 'favorites_data'
+                }
+            },
+            // Calculate stats
+            {
+                $addFields: {
+                    commentCount: { $size: '$comments_data' },
+                    favoriteCount: { $size: '$favorites_data' },
+                    averageRating: { 
+                        $ifNull: [ { $avg: '$comments_data.rating' }, 0 ]
+                    }
+                }
+            },
+            // Remove heavy arrays
+            {
+                $project: {
+                    comments_data: 0,
+                    favorites_data: 0
+                }
+            }
+        ];
+
+        const models = await Model.aggregate(pipeline);
+        // Populate brand (optional but good for consistency if needed, though we already know the brand)
+        // const populatedModels = await Model.populate(models, { path: 'brand' });
+        
         res.json(models);
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -350,11 +434,87 @@ exports.getModelsByType = async (req, res) => {
     const typeValue = req.params.typeValue;
 
     try {
-        const totalDocs = await Model.countDocuments({ type: typeValue });
-        const models = await Model.find({ type: typeValue }).populate('brand').skip(skip).limit(limit);
-        
+        const pipeline = [
+            { $match: { type: typeValue } },
+            // Lookup comments
+            {
+                $lookup: {
+                    from: 'comments',
+                    localField: '_id',
+                    foreignField: 'model',
+                    as: 'comments_data'
+                }
+            },
+            // Lookup favorites
+            {
+                $lookup: {
+                    from: 'favorites',
+                    localField: '_id',
+                    foreignField: 'model',
+                    as: 'favorites_data'
+                }
+            },
+            // Lookup brand
+            {
+                $lookup: {
+                    from: 'brands',
+                    localField: 'brand',
+                    foreignField: '_id',
+                    as: 'brand'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$brand',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            // Calculate stats
+            {
+                $addFields: {
+                    commentCount: { $size: '$comments_data' },
+                    favoriteCount: { $size: '$favorites_data' },
+                    averageRating: { 
+                        $ifNull: [ { $avg: '$comments_data.rating' }, 0 ]
+                    }
+                }
+            },
+            // Remove heavy arrays
+            {
+                $project: {
+                    comments_data: 0,
+                    favorites_data: 0
+                }
+            },
+            // Pagination
+            {
+                $facet: {
+                    metadata: [{ $count: 'totalDocs' }],
+                    data: [{ $skip: skip }, { $limit: limit }]
+                }
+            }
+        ];
+
+        const aggregationResult = await Model.aggregate(pipeline);
+
+        if (!aggregationResult.length) {
+            return res.json({
+                docs: [],
+                totalDocs: 0,
+                limit,
+                totalPages: 0,
+                page,
+                hasNextPage: false,
+                hasPrevPage: false
+            });
+        }
+
+        const { totalDocs, data: docs } = aggregationResult[0].metadata.length > 0 
+            ? { totalDocs: aggregationResult[0].metadata[0].totalDocs, data: aggregationResult[0].data }
+            : { totalDocs: 0, data: [] };
+
         res.json({
-            docs: models,
+            docs,
             totalDocs,
             limit,
             totalPages: Math.ceil(totalDocs / limit),
@@ -374,11 +534,87 @@ exports.getModelsByOrigin = async (req, res) => {
     const originValue = req.params.originValue;
 
     try {
-        const totalDocs = await Model.countDocuments({ origin: originValue });
-        const models = await Model.find({ origin: originValue }).populate('brand').skip(skip).limit(limit);
-        
+        const pipeline = [
+            { $match: { origin: originValue } },
+            // Lookup comments
+            {
+                $lookup: {
+                    from: 'comments',
+                    localField: '_id',
+                    foreignField: 'model',
+                    as: 'comments_data'
+                }
+            },
+            // Lookup favorites
+            {
+                $lookup: {
+                    from: 'favorites',
+                    localField: '_id',
+                    foreignField: 'model',
+                    as: 'favorites_data'
+                }
+            },
+            // Lookup brand
+            {
+                $lookup: {
+                    from: 'brands',
+                    localField: 'brand',
+                    foreignField: '_id',
+                    as: 'brand'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$brand',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            // Calculate stats
+            {
+                $addFields: {
+                    commentCount: { $size: '$comments_data' },
+                    favoriteCount: { $size: '$favorites_data' },
+                    averageRating: { 
+                        $ifNull: [ { $avg: '$comments_data.rating' }, 0 ]
+                    }
+                }
+            },
+            // Remove heavy arrays
+            {
+                $project: {
+                    comments_data: 0,
+                    favorites_data: 0
+                }
+            },
+            // Pagination
+            {
+                $facet: {
+                    metadata: [{ $count: 'totalDocs' }],
+                    data: [{ $skip: skip }, { $limit: limit }]
+                }
+            }
+        ];
+
+        const aggregationResult = await Model.aggregate(pipeline);
+
+        if (!aggregationResult.length) {
+            return res.json({
+                docs: [],
+                totalDocs: 0,
+                limit,
+                totalPages: 0,
+                page,
+                hasNextPage: false,
+                hasPrevPage: false
+            });
+        }
+
+        const { totalDocs, data: docs } = aggregationResult[0].metadata.length > 0
+            ? { totalDocs: aggregationResult[0].metadata[0].totalDocs, data: aggregationResult[0].data }
+            : { totalDocs: 0, data: [] };
+
         res.json({
-            docs: models,
+            docs,
             totalDocs,
             limit,
             totalPages: Math.ceil(totalDocs / limit),

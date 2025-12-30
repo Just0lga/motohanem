@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Favorite = require('../models/Favorite');
 
 exports.getAllFavorites = async (req, res) => {
@@ -11,7 +12,81 @@ exports.getAllFavorites = async (req, res) => {
 
 exports.getFavoritesByUser = async (req, res) => {
     try {
-        const favorites = await Favorite.find({ user: req.params.userId }).populate('model');
+        const userId = new mongoose.Types.ObjectId(req.params.userId);
+
+        const pipeline = [
+            {
+                $match: { user: userId }
+            },
+            // Lookup Model
+            {
+                $lookup: {
+                    from: 'models', // Ensure this matches your collection name (usually plural lowercase)
+                    localField: 'model',
+                    foreignField: '_id',
+                    as: 'model_data'
+                }
+            },
+            {
+                $unwind: '$model_data'
+            },
+            // Lookup Brand for the model (to mimic populate('model') fully regarding brand if needed, but usually just model stats are critical here)
+             {
+                $lookup: {
+                    from: 'brands',
+                    localField: 'model_data.brand',
+                    foreignField: '_id',
+                    as: 'model_data.brand'
+                }
+            },
+            {
+                 $unwind: {
+                    path: '$model_data.brand',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            // Lookup Comments for stats
+            {
+                $lookup: {
+                    from: 'comments',
+                    localField: 'model_data._id',
+                    foreignField: 'model',
+                    as: 'comments_data'
+                }
+            },
+            // Lookup Favorites for stats
+            {
+                $lookup: {
+                    from: 'favorites',
+                    localField: 'model_data._id',
+                    foreignField: 'model',
+                    as: 'favorites_data'
+                }
+            },
+            // Calculate stats and enrich model_data
+            {
+                $addFields: {
+                    'model_data.commentCount': { $size: '$comments_data' },
+                    'model_data.favoriteCount': { $size: '$favorites_data' },
+                    'model_data.averageRating': { 
+                        $ifNull: [ { $avg: '$comments_data.rating' }, 0 ]
+                    }
+                }
+            },
+            // Project final structure to match original output: { _id, user, model: { ... } }
+            // We keep the original 'user' and '_id' from the favorite document, and replace 'model' with our enriched 'model_data'
+            {
+                $project: {
+                    _id: 1,
+                    user: 1,
+                    model: '$model_data',
+                    created_at: 1 // assuming timestamps exist
+                }
+            }
+        ];
+
+        const favorites = await Favorite.aggregate(pipeline);
+        // Note: aggregation returns POJOs, not Mongoose documents.
         res.json(favorites);
     } catch (err) {
         res.status(500).json({ message: err.message });
