@@ -47,6 +47,7 @@ app.use('/favorites', require('./routes/favorites'));
 app.use('/translations', require('./routes/translations'));
 app.use('/api/v1/update', require('./routes/updateRoutes'));
 app.use('/types-of-motorcycle', require('./routes/typesOfMotorcycle'));
+app.use('/countries', require('./routes/countries'));
 
 // Root route
 app.get('/', (req, res) => {
