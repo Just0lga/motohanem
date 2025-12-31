@@ -627,6 +627,134 @@ exports.getModelsByOrigin = async (req, res) => {
     }
 }
 
+exports.searchModels = async (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    let query = req.query.q || '';
+
+    if (!query) {
+        return res.status(400).json({ message: 'Query parameter "q" is required' });
+    }
+
+    // Fuzzy search logic
+    // 1. Remove special characters to get base alphanumeric string
+    const cleanQuery = query.replace(/[^a-zA-Z0-9]/g, '');
+    
+    // 2. Create regex pattern that allows optional spaces or dashes between characters
+    // e.g. "mt25" -> "m[\s-]*t[\s-]*2[\s-]*5"
+    const regexPattern = cleanQuery.split('').join('[\\s-]*');
+    
+    try {
+        const pipeline = [
+            // Create a temporary field combining brand name and model name for searching
+            {
+                $addFields: {
+                    full_model_name: { 
+                        $concat: [ 
+                            { $ifNull: ["$brand_name", ""] }, 
+                            " ", 
+                            "$model" 
+                        ] 
+                    }
+                }
+            },
+            { 
+                $match: { 
+                    full_model_name: { $regex: regexPattern, $options: 'i' } 
+                } 
+            },
+            // Lookup comments
+            {
+                $lookup: {
+                    from: 'comments',
+                    localField: '_id',
+                    foreignField: 'model',
+                    as: 'comments_data'
+                }
+            },
+            // Lookup favorites
+            {
+                $lookup: {
+                    from: 'favorites',
+                    localField: '_id',
+                    foreignField: 'model',
+                    as: 'favorites_data'
+                }
+            },
+            // Lookup brand
+            {
+                $lookup: {
+                    from: 'brands',
+                    localField: 'brand',
+                    foreignField: '_id',
+                    as: 'brand'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$brand',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            // Calculate stats
+            {
+                $addFields: {
+                    commentCount: { $size: '$comments_data' },
+                    favoriteCount: { $size: '$favorites_data' },
+                    averageRating: { 
+                        $ifNull: [ { $avg: '$comments_data.rating' }, 0 ]
+                    }
+                }
+            },
+            // Remove heavy arrays
+            {
+                $project: {
+                    comments_data: 0,
+                    favorites_data: 0
+                }
+            },
+            // Pagination
+            {
+                $facet: {
+                    metadata: [{ $count: 'totalDocs' }],
+                    data: [{ $skip: skip }, { $limit: limit }]
+                }
+            }
+        ];
+
+        const aggregationResult = await Model.aggregate(pipeline);
+
+        if (!aggregationResult.length) {
+            return res.json({
+                docs: [],
+                totalDocs: 0,
+                limit,
+                totalPages: 0,
+                page,
+                hasNextPage: false,
+                hasPrevPage: false
+            });
+        }
+
+        const { totalDocs, data: docs } = aggregationResult[0].metadata.length > 0
+            ? { totalDocs: aggregationResult[0].metadata[0].totalDocs, data: aggregationResult[0].data }
+            : { totalDocs: 0, data: [] };
+
+        res.json({
+            docs,
+            totalDocs,
+            limit,
+            totalPages: Math.ceil(totalDocs / limit),
+            page,
+            hasNextPage: page * limit < totalDocs,
+            hasPrevPage: page > 1
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
 exports.createModel = async (req, res) => {
   try {
     const newModel = new Model(req.body);

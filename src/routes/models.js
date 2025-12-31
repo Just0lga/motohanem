@@ -305,6 +305,69 @@ router.get('/stats/most-commented', modelController.getMostCommented);
  */
 router.get('/stats/highest-rated', modelController.getHighestRated);
 
+/**
+ * @swagger
+ * /models/search:
+ *   get:
+ *     summary: Search models by name
+ *     tags: [Models]
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The search query string
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: The page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: The number of items per page
+ *     responses:
+ *       200:
+ *         description: The list of matching models
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 docs:
+ *                   type: array
+ *                   items:
+ *                     allOf:
+ *                       - $ref: '#/components/schemas/Model'
+ *                       - type: object
+ *                         properties:
+ *                           commentCount:
+ *                             type: integer
+ *                           favoriteCount:
+ *                             type: integer
+ *                           averageRating:
+ *                             type: number
+ *                 totalDocs:
+ *                   type: integer
+ *                 limit:
+ *                   type: integer
+ *                 totalPages:
+ *                   type: integer
+ *                 page:
+ *                   type: integer
+ *                 hasNextPage:
+ *                   type: boolean
+ *                 hasPrevPage:
+ *                   type: boolean
+ *       400:
+ *         description: Query parameter "q" is required
+ */
+router.get('/search', modelController.searchModels);
+
 router.get('/', modelController.getAllModels);
 
 /**
