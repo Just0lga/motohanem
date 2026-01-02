@@ -6,6 +6,7 @@ const connectDB = require('./config/db');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpecs = require('./config/swagger');
 const cors = require('cors');
+const { startPremiumExpiryJob } = require('./services/cronService');
 
 const app = express();
 app.set('trust proxy', 1);
@@ -13,6 +14,9 @@ const port = process.env.PORT || 3000;
 
 // Connect to MongoDB
 connectDB();
+
+// Start Cron Jobs
+startPremiumExpiryJob();
 
 const rateLimit = require('express-rate-limit');
 

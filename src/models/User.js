@@ -28,7 +28,18 @@ const userSchema = new mongoose.Schema({
   resetPasswordToken: String,
   resetPasswordExpires: Date,
   deleteAccountToken: String,
-  deleteAccountExpires: Date
+  deleteAccountExpires: Date,
+  isPremium: {
+    type: Boolean,
+    default: false
+  },
+  subscriptionType: {
+    type: String,
+    enum: ['monthly', 'yearly'],
+    default: null
+  },
+  premiumStartDate: Date,
+  premiumEndDate: Date
 }, {
   timestamps: { createdAt: 'created_at', updatedAt: false }
 });

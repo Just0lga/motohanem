@@ -45,6 +45,21 @@ const strictLimiter = rateLimit({
  *           type: string
  *           format: date-time
  *           description: The date the user was created
+ *         isPremium:
+ *           type: boolean
+ *           description: Whether the user is a premium member
+ *         subscriptionType:
+ *           type: string
+ *           enum: [monthly, yearly]
+ *           description: The type of subscription
+ *         premiumStartDate:
+ *           type: string
+ *           format: date-time
+ *           description: The start date of the premium membership
+ *         premiumEndDate:
+ *           type: string
+ *           format: date-time
+ *           description: The end date of the premium membership
  */
 
 /**
@@ -259,6 +274,8 @@ router.get('/', protect, userController.getAllUsers);
  *   get:
  *     summary: Get the user by id
  *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -277,5 +294,43 @@ router.get('/', protect, userController.getAllUsers);
  *         description: The user was not found
  */
 router.get('/:id', protect, userController.getUserById);
+
+/**
+ * @swagger
+ * /users/{id}/upgrade:
+ *   post:
+ *     summary: Upgrade user to premium (Helper for testing)
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The user id
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - subscriptionType
+ *             properties:
+ *               subscriptionType:
+ *                 type: string
+ *                 enum: [monthly, yearly]
+ *                 description: The type of subscription
+ *     responses:
+ *       200:
+ *         description: User upgraded successfully
+ *       404:
+ *         description: User not found
+ *       400:
+ *         description: Invalid subscription type
+ */
+router.post('/:id/upgrade', protect, userController.upgradeToPremium);
 
 module.exports = router;
