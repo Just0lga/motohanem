@@ -248,7 +248,7 @@ exports.upgradeToPremium = async (req, res) => {
 
     // EKLENEN KISIM: Kullanıcı zaten premium mu kontrol et
     if (user.isPremium) {
-      return res.status(400).json({ message: 'Üye zaten premium' });
+      return res.status(400).json({ message: 'User already premium' });
     }
 
     const now = new Date();
