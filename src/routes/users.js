@@ -264,6 +264,34 @@ router.post('/request-account-deletion', protect, userController.requestAccountD
  */
 router.post('/confirm-account-deletion', protect, userController.confirmAccountDeletion);
 
+/**
+ * @swagger
+ * /users/subscription-prices:
+ *   get:
+ *     summary: Retrieve subscription prices
+ *     tags: [Users]
+ *     responses:
+ *       200:
+ *         description: The list of subscription prices
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     description: The subscription ID
+ *                   subscription_type:
+ *                     type: string
+ *                     description: The subscription type
+ *                   price:
+ *                     type: number
+ *                     description: The price
+ */
+router.get('/subscription-prices', userController.getSubscriptionPrices);
+
 
 // Protected Routes
 router.get('/', protect, userController.getAllUsers);

@@ -283,3 +283,11 @@ exports.upgradeToPremium = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+exports.getSubscriptionPrices = (req, res) => {
+  res.status(200).json([
+    { "id": "1", "subscription_type": "Monthly", "price": 100 },
+    { "id": "2", "subscription_type": "Yearly", "price": 1000 }
+  ]);
+};
+
