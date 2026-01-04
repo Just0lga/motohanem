@@ -246,6 +246,11 @@ exports.upgradeToPremium = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    // EKLENEN KISIM: Kullanıcı zaten premium mu kontrol et
+    if (user.isPremium) {
+      return res.status(400).json({ message: 'Üye zaten premium' });
+    }
+
     const now = new Date();
     let endDate = new Date(now);
 
