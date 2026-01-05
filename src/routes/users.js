@@ -215,6 +215,7 @@ router.post('/forgot-password', userController.forgotPassword);
  *       500:
  *         description: Some server error
  */
+router.post('/reset-password', userController.resetPassword);
 // Protected Routes
 /**
  * @swagger
