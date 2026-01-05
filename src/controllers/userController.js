@@ -47,22 +47,33 @@ exports.createUser = async (req, res) => {
 
   // Simple Validation
   if (!name || !email || !password) {
-    return res.status(400).json({ message: 'Please add all fields' });
+    return res.status(400).json({ message: 'Lütfen bütün alanları doldurunuz' });
   }
-  if (password.length < 6) {
-    return res.status(400).json({ message: 'Password must be at least 6 characters' });
+  const passwordErrors = [];
+  if (password.length < 8) {
+    passwordErrors.push('Şifre en az 8 karakter olmalıdır');
+  }
+  if (!/[a-zA-Z]/.test(password)) {
+    passwordErrors.push('Şifre en az 1 harf içermelidir');
+  }
+  if (!/\d/.test(password)) {
+    passwordErrors.push('Şifre en az 1 rakam içermelidir');
+  }
+
+  if (passwordErrors.length > 0) {
+    return res.status(400).json({ message: passwordErrors.join(', ') });
   }
   // Email format validation (basic regex)
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
-    return res.status(400).json({ message: 'Invalid email format' });
+    return res.status(400).json({ message: 'Geçerli bir e-posta adresi giriniz' });
   }
 
   try {
     // Check if user exists
     const userExists = await User.findOne({ email });
     if (userExists) {
-      return res.status(400).json({ message: 'User already exists' });
+      return res.status(400).json({ message: 'Bu e-posta adresiyle kayıtlı bir kullanıcı zaten bulunmaktadır' });
     }
 
     // Create user (hashing done in model pre-save)
@@ -150,6 +161,21 @@ exports.resetPassword = async (req, res) => {
   const { email, code, newPassword } = req.body;
 
   try {
+    const passwordErrors = [];
+    if (newPassword.length < 8) {
+      passwordErrors.push('Şifre en az 8 karakter olmalıdır');
+    }
+    if (!/[a-zA-Z]/.test(newPassword)) {
+      passwordErrors.push('Şifre en az 1 harf içermelidir');
+    }
+    if (!/\d/.test(newPassword)) {
+      passwordErrors.push('Şifre en az 1 rakam içermelidir');
+    }
+
+    if (passwordErrors.length > 0) {
+      return res.status(400).json({ message: passwordErrors.join(', ') });
+    }
+
     const user = await User.findOne({
       email,
       resetPasswordToken: code,
