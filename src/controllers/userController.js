@@ -257,58 +257,7 @@ exports.confirmAccountDeletion = async (req, res) => {
   }
 };
 
-exports.upgradeToPremium = async (req, res) => {
-  const { subscriptionType } = req.body;
-  const userId = req.params.id;
 
-  if (!['monthly', 'yearly'].includes(subscriptionType)) {
-    return res.status(400).json({ message: 'Invalid subscription type. Must be monthly or yearly.' });
-  }
-
-  try {
-    const user = await User.findById(userId);
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    // EKLENEN KISIM: Kullanıcı zaten premium mu kontrol et
-    if (user.isPremium) {
-      return res.status(400).json({ message: 'User already premium' });
-    }
-
-    const now = new Date();
-    let endDate = new Date(now);
-
-    if (subscriptionType === 'monthly') {
-      endDate.setMonth(endDate.getMonth() + 1);
-    } else if (subscriptionType === 'yearly') {
-      endDate.setFullYear(endDate.getFullYear() + 1);
-    }
-
-    user.isPremium = true;
-    user.subscriptionType = subscriptionType;
-    user.premiumStartDate = now;
-    user.premiumEndDate = endDate;
-
-    await user.save();
-
-    res.json({
-      message: `User upgraded to ${subscriptionType} premium`,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        isPremium: user.isPremium,
-        subscriptionType: user.subscriptionType,
-        premiumStartDate: user.premiumStartDate,
-        premiumEndDate: user.premiumEndDate
-      }
-    });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
 
 exports.getSubscriptionPrices = (req, res) => {
   res.status(200).json([

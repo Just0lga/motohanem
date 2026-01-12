@@ -324,42 +324,6 @@ router.get('/', protect, userController.getAllUsers);
  */
 router.get('/:id', protect, userController.getUserById);
 
-/**
- * @swagger
- * /users/{id}/upgrade:
- *   post:
- *     summary: Upgrade user to premium (Helper for testing)
- *     tags: [Users]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         schema:
- *           type: string
- *         required: true
- *         description: The user id
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - subscriptionType
- *             properties:
- *               subscriptionType:
- *                 type: string
- *                 enum: [monthly, yearly]
- *                 description: The type of subscription
- *     responses:
- *       200:
- *         description: User upgraded successfully
- *       404:
- *         description: User not found
- *       400:
- *         description: Invalid subscription type
- */
-router.post('/:id/upgrade', protect, userController.upgradeToPremium);
+
 
 module.exports = router;

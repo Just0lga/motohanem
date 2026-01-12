@@ -35,7 +35,6 @@ const userSchema = new mongoose.Schema({
   },
   subscriptionType: {
     type: String,
-    enum: ['monthly', 'yearly'],
     default: null
   },
   premiumStartDate: Date,
